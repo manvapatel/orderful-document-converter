@@ -120,21 +120,21 @@ describe('Test convertDocument' , () => {
         expect(response.body.message).to.equal('Line separator and element separator required for string format'); 
       })
 
-      // it('Should  error if format is unsupported ', async() => {
-      //   const reqBody = {
-      //     "document": "<html></html>",
-      //     "outputFormat": "xml",
-      //     "lineSeparator": "~",
-      //     "elementSeparator": "*",
-      //   }
+      it('Should  error if format is unsupported ', async() => {
+        const reqBody = {
+          "document": "<html><html>",
+          "outputFormat": "xml",
+          "lineSeparator": "~",
+          "elementSeparator": "*",
+        }
         
-      //   const response =  await request(app.getHttpServer())
-      //     .post('/converter')
-      //     .send(reqBody)
-      //     .expect(400)
+        const response =  await request(app.getHttpServer())
+          .post('/converter')
+          .send(reqBody)
+          .expect(400)
 
-      //   expect(response.body.message).to.equal('Unsupported document format'); 
-      // })
+        expect(response.body.message).to.equal('XML element name cannot contain special characters'); 
+      })
       it('Should convert String to XML', async () => {
         const reqBody = {
           "document": stringFormat,

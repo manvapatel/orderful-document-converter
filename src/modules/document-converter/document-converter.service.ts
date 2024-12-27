@@ -1,17 +1,11 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Builder, parseStringPromise } from "xml2js";
 import { DocumentType } from './document-converter.types';
 
 @Injectable()
 export class DocumentConverterService {
 private readonly logger = new Logger(DocumentConverterService.name);
-  public async getHello(): Promise<string> {
-    const message = 'Hello Manva!';
-    return message
-  }
-
   public async convertDocument(document: any, outputFormat: string, lineSeparator:string, elementSeparator: string): Promise<any> {
-    console.log('---inside');
     if (!document && !document?.trim()) {
         throw new BadRequestException('Document is required');
     }
@@ -68,16 +62,13 @@ private readonly logger = new Logger(DocumentConverterService.name);
   }
 
   private detectFormat(document: string | object): DocumentType {
-    console.log('--detecting formats');
     try {
         if (typeof document === 'string') {
             if (document.trim().startsWith('<?xml') || document.trim().startsWith('<root>')) {
-              console.log('XML');  
               return DocumentType.XML;
             } else 
             { 
-              console.log
-                return DocumentType.STRING ;
+              return DocumentType.STRING ;
             }
           } else if (typeof document === 'object') {
               return DocumentType.JSON;
@@ -150,6 +141,14 @@ private readonly logger = new Logger(DocumentConverterService.name);
 
   public async jsonToXml(json: object): Promise<string> {
     try{
+      // XML element names cannot have special characters (https://www.w3.org/TR/xml/#NT-NameStartChar).
+      // Validate based on rules. 
+      const allowedXmlElementNameRegex = /^[a-zA-Z_][\w.\-]*$/;
+      for(const key of Object.keys(json)) {
+        if(!allowedXmlElementNameRegex.test(key)) {
+          throw new BadRequestException('XML element name cannot contain special characters');
+        }
+      }
       const builder = new Builder();
       const result = await builder.buildObject(json);
       return result;
