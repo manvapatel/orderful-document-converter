@@ -9,7 +9,7 @@ export enum DocumentType {
 
   export class DocumentConverterRequest {
     @IsNotEmpty()
-    document: string | object;  // For format #1 (string input)
+    document: string | object;
   
   
     @IsEnum(DocumentType)
